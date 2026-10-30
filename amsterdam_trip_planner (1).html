@@ -1,0 +1,1663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Amsterdam Trip">
+    <title>Amsterdam Trip Planner (2026-11-04 - 2026-11-08)</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <meta name="theme-color" content="#FF5A36">
+
+    <!-- Fonts: Bricolage Grotesque (headings), Figtree (text), DM Mono (times) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Figtree:wght@400..800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <script>
+        // Same palette as the TripCraft builder
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {"brand":{"50":"#FFE0D4","100":"#FFE0D4","200":"#FFE0D4","500":"#FF5A36","600":"#FF5A36","700":"#231942","800":"#231942"},"onbrand":"#231942","slate":{"50":"#FFF3E9","100":"#EADCD1","200":"#EADCD1","300":"#8E86A3","400":"#8E86A3","500":"#5B5176","600":"#5B5176","700":"#231942","800":"#231942","900":"#231942"}},
+                    fontFamily: {
+                        sans: ['Figtree', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        display: ['Bricolage Grotesque', 'Trebuchet MS', 'sans-serif'],
+                        mono: ['DM Mono', 'ui-monospace', 'Menlo', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg: #FFF3E9;
+            --surface: #FFFFFF;
+            --ink: #231942;
+            --ink-2: #5B5176;
+            --ink-3: #8E86A3;
+            --soft-line: #EADCD1;
+            --primary: #FF5A36;
+            --on-primary: #231942;
+            --primary-soft: #FFE0D4;
+            --sun: #FFD23F;
+            --danger: #C42B12;
+            --danger-soft: #FFE1DA;
+            --cat-food: #FF8A3D;
+            --cat-culture: #9B6BFF;
+            --cat-shopping: #FF7EB6;
+            --cat-travel: #4D6BFF;
+            --cat-sight: #2EC4A0;
+            --day: #FF5A36;
+        }
+
+        body {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
+            font-family: 'Figtree', -apple-system, sans-serif;
+            padding-bottom: env(safe-area-inset-bottom);
+            color: var(--ink);
+            background-color: var(--bg);
+            background-image: radial-gradient(color-mix(in srgb, var(--ink) 9%, transparent) 1.2px, transparent 1.3px);
+            background-size: 22px 22px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .active-scale:active {
+            transform: scale(0.96);
+            transition: transform 0.1s ease;
+        }
+
+        .checkbox-pop {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                        background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .item-text-done { text-decoration: line-through; color: var(--ink-3); }
+
+        .backdrop-blur-custom {
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+
+        /* Sticker look: dark outline with a solid offset shadow */
+        .sticker {
+            border: 2px solid var(--ink);
+            box-shadow: 2px 2px 0 var(--ink);
+        }
+        .sticker:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
+
+        .app-header {
+            padding: max(44px, calc(env(safe-area-inset-top) + 16px)) 20px 22px;
+            background: var(--primary);
+            color: var(--on-primary);
+            border-bottom: 2px solid var(--ink);
+            border-radius: 0 0 28px 28px;
+        }
+        .header-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.75; }
+        .progress-track { height: 12px; margin-top: 8px; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); overflow: hidden; }
+        .progress-fill { height: 100%; width: 0; background: var(--ink); transition: width 0.3s ease; }
+        .header-code {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-weight: 800;
+            font-size: 64px;
+            line-height: 0.85;
+            letter-spacing: -0.04em;
+            font-variation-settings: "wdth" 76, "opsz" 96;
+            margin-top: 4px;
+        }
+
+        /* Day tabs: a stub on top shows each day's line color */
+        .day-tab {
+            position: relative;
+            flex-shrink: 0;
+            min-width: 76px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1px;
+            padding: 13px 12px 9px;
+            border: 2px solid var(--ink);
+            border-radius: 14px;
+            background: var(--surface);
+            color: var(--ink);
+            text-align: left;
+            box-shadow: 2px 2px 0 var(--ink);
+        }
+        .day-tab::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 10px;
+            right: 10px;
+            height: 6px;
+            border: 2px solid var(--ink);
+            border-top: 0;
+            border-radius: 0 0 6px 6px;
+            background: var(--day);
+        }
+        .day-tab.is-active { background: var(--ink); color: var(--surface); box-shadow: 3px 3px 0 var(--day); }
+        .day-tab-date { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); }
+        .day-tab-title { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 19px; line-height: 1.1; letter-spacing: -0.02em; }
+        .day-tab-count { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--ink-2); }
+        .day-tab.is-active .day-tab-date,
+        .day-tab.is-active .day-tab-count { color: color-mix(in srgb, var(--surface) 70%, transparent); }
+        .day-tab.is-done .day-tab-count { color: var(--ink); font-weight: 600; }
+        .day-tab.is-active.is-done .day-tab-count { color: var(--sun); }
+
+        #dayEyebrow::before {
+            content: '';
+            display: inline-block;
+            width: 11px;
+            height: 11px;
+            margin-right: 6px;
+            border: 2px solid var(--ink);
+            border-radius: 50%;
+            background: var(--day);
+            vertical-align: -1px;
+        }
+
+        /* Spot cards */
+        .spot-card {
+            background: var(--surface);
+            border: 2px solid var(--soft-line);
+            border-radius: 16px;
+            padding: 10px 10px 6px 4px;
+            transition: border-color 0.2s, background-color 0.2s, transform 0.2s;
+        }
+        .spot-card.is-done { background: var(--bg); }
+        .spot-main { display: flex; align-items: flex-start; gap: 8px; }
+        .spot-info { flex: 1; min-width: 0; cursor: pointer; }
+        .spot-tags { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 8px; }
+        .spot-title { font-size: 16px; font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; color: var(--ink); margin-top: 3px; overflow-wrap: anywhere; }
+        .spot-notes { font-size: 13px; line-height: 1.4; color: var(--ink-2); margin-top: 2px; overflow-wrap: anywhere; }
+        .spot-check {
+            width: 26px; height: 26px; flex-shrink: 0; margin-top: 1px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; border: 2px solid var(--ink); background: var(--surface); color: transparent;
+        }
+        .spot-card.is-done .spot-check { background: var(--ink); color: var(--surface); }
+        .spot-actions {
+            display: flex; align-items: center; gap: 2px;
+            margin: 8px 0 0 34px; padding-top: 4px;
+            border-top: 2px dashed var(--soft-line);
+        }
+        .spot-action {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            min-width: 36px; height: 34px; padding: 0 9px;
+            border-radius: 9px; color: var(--ink-2); font-size: 13px; font-weight: 600;
+        }
+        .spot-action:active { background: var(--bg); }
+        .spot-action.is-map { color: var(--ink); }
+        .spot-action.is-map i { color: var(--primary); }
+        .spot-action.is-push { margin-left: auto; }
+        .spot-action.is-danger:active { background: var(--danger-soft); color: var(--danger); }
+
+        .cat-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+        .cat-tag::before { content: ''; width: 9px; height: 9px; border: 1.5px solid var(--ink); border-radius: 3px; background: var(--dot, var(--cat-sight)); }
+        .cat-food { --dot: var(--cat-food); }
+        .cat-culture { --dot: var(--cat-culture); }
+        .cat-shopping { --dot: var(--cat-shopping); }
+        .cat-travel { --dot: var(--cat-travel); }
+        .cat-sightseeing { --dot: var(--cat-sight); }
+        .meal-tag { display: inline-flex; align-items: center; gap: 4px; padding: 0 7px; border: 1.5px solid var(--ink); border-radius: 999px; background: var(--sun); color: var(--ink); font-size: 11px; font-weight: 700; text-transform: capitalize; }
+
+        /* ===== Timeline: each day is a metro line in its own color ===== */
+        .timeline-item-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .timeline-time-col {
+            position: relative;
+            align-self: stretch;
+            flex-shrink: 0;
+            width: 52px;
+            padding-top: 14px;
+        }
+
+        .timeline-time-pill {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 5px;
+            height: 12px;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+            color: var(--ink);
+            white-space: nowrap;
+        }
+        .timeline-time-pill::after {
+            content: '';
+            position: relative;
+            z-index: 1;
+            width: 12px;
+            height: 12px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            border: 2.5px solid var(--ink);
+            background: var(--surface);
+            box-shadow: inset 0 0 0 2px var(--day);
+        }
+        .timeline-time-pill.is-clash::after { background: var(--sun); box-shadow: none; }
+
+        .timeline-connector {
+            position: absolute;
+            right: 4px;
+            top: 20px;
+            bottom: -20px;
+            width: 4px;
+            border-radius: 2px;
+            background: var(--day);
+        }
+        .timeline-connector.is-long {
+            background: repeating-linear-gradient(to bottom, var(--day) 0 6px, transparent 6px 11px);
+        }
+        .timeline-gap {
+            position: absolute;
+            right: 13px;
+            top: calc(50% + 20px);
+            transform: translateY(-50%) rotate(-3deg);
+            padding: 1px 4px;
+            border: 1.5px solid var(--ink);
+            border-radius: 5px;
+            background: var(--sun);
+            color: var(--ink);
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        body.is-dragging .timeline-gap { visibility: hidden; }
+
+        /* Card to the right of the time column */
+        .timeline-card {
+            flex: 1;
+            min-width: 0;
+            margin-bottom: 10px;
+        }
+
+        /* ===== Drag & drop reordering ===== */
+        .drag-handle {
+            touch-action: none;
+            cursor: grab;
+            color: var(--ink-3);
+            padding: 4px 4px;
+            border-radius: 8px;
+        }
+        .drag-handle:hover { color: var(--ink); background: var(--bg); }
+        body.is-dragging, body.is-dragging * { cursor: grabbing !important; }
+
+        .timeline-item-row.drag-shift { transition: transform 0.18s ease; }
+        .timeline-item-row.drag-active {
+            position: relative;
+            z-index: 30;
+            transition: none;
+        }
+        .timeline-item-row.drag-active .timeline-card > div {
+            border-color: var(--ink);
+            box-shadow: 5px 5px 0 var(--ink);
+            transform: rotate(-1deg) scale(1.02);
+        }
+        .timeline-item-row.drag-active .timeline-time-pill {
+            text-decoration: underline 3px var(--day);
+            text-underline-offset: 3px;
+        }
+        .timeline-item-row.drag-active .timeline-connector { visibility: hidden; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <div class="max-w-md mx-auto w-full min-h-screen flex flex-col bg-slate-50 shadow-2xl relative pb-20 border-x border-slate-200">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="flex justify-between items-start gap-3">
+                <div class="min-w-0">
+                    <div class="header-label">Trip to</div>
+                    <h1 class="header-code">AMS</h1>
+                    <div class="font-bold text-[15px] mt-1.5 truncate">Amsterdam</div>
+                    <p class="font-mono text-[11px] mt-0.5 opacity-80">Nov 4 – Nov 8, 2026</p>
+                </div>
+                <button id="pwaHelpBtn" class="sticker flex-shrink-0 bg-white text-slate-900 rounded-xl text-xs font-bold px-3 py-2 flex items-center gap-1.5">
+                    <i class="fa-solid fa-mobile-screen"></i>
+                    <span>Install</span>
+                </button>
+            </div>
+
+            <!-- Overall progress -->
+            <div class="mt-5">
+                <div class="flex justify-between items-baseline text-xs font-semibold">
+                    <span>Trip progress</span>
+                    <span class="font-mono"><span id="overallProgressText">0 of 0 done</span> · <span id="overallPercentBadge">0%</span></span>
+                </div>
+                <div class="progress-track">
+                    <div id="overallProgressBar" class="progress-fill"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Horizontal Days Navigation Bar -->
+        <div class="px-4 mt-4">
+            <div class="flex gap-2 overflow-x-auto no-scrollbar py-1 px-0.5" id="daysNav">
+                <!-- Tabs rendered dynamically -->
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="flex-1 px-4 pt-3 pb-8">
+
+            <!-- Day Overview Card -->
+            <div class="bg-white rounded-2xl p-4 border-2 border-slate-900 mb-4">
+                <div class="flex justify-between items-start gap-3">
+                    <div class="min-w-0">
+                        <p id="dayEyebrow" class="font-mono text-[11px] text-slate-600">Day 1</p>
+                        <h2 id="dayTitle" class="font-display font-extrabold text-[28px] leading-[1.02] tracking-tight text-slate-900 mt-1">Day 1</h2>
+                        <p id="daySubtitle" class="text-xs text-slate-600 mt-1.5 hidden"></p>
+                    </div>
+                    <span id="dayCountText" class="flex-shrink-0 font-mono text-[11px] text-slate-900 bg-brand-100 px-2 py-0.5 rounded-full border-2 border-slate-900">0/0 done</span>
+                </div>
+
+                <!-- Daily Progress Bar -->
+                <div class="w-full bg-white h-3 rounded-full overflow-hidden mt-4 border-2 border-slate-900">
+                    <div id="dayProgressBar" class="bg-brand-500 h-full rounded-full transition-all duration-300 w-0"></div>
+                </div>
+            </div>
+
+            <!-- Action Controls Bar -->
+            <div class="flex justify-between items-center mb-3 px-1">
+                <h3 class="text-[13px] font-semibold text-slate-900">Spots</h3>
+                <div class="flex gap-1">
+                    <button id="sortDayBtn" title="Sort from morning to night" class="text-xs text-slate-600 px-2.5 py-2 rounded-lg active-scale flex items-center gap-1.5 font-medium">
+                        <i class="fa-solid fa-arrow-down-short-wide text-[11px]"></i>
+                        <span>Sort</span>
+                    </button>
+                    <button id="resetDayBtn" title="Untick every spot on this day" class="text-xs text-slate-600 px-2.5 py-2 rounded-lg active-scale flex items-center gap-1.5 font-medium">
+                        <i class="fa-solid fa-rotate-right text-[11px]"></i>
+                        <span>Reset</span>
+                    </button>
+                    <button id="addItemBtn" class="sticker text-xs text-onbrand bg-brand-500 px-3 py-2 rounded-lg font-bold flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus text-[11px]"></i>
+                        <span>Add spot</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dynamic Activity List Container -->
+            <div id="checklistItems">
+                <!-- Items rendered here -->
+            </div>
+
+            <!-- Empty State Display -->
+            <div id="emptyState" class="hidden text-center py-12 px-4 border border-dashed border-slate-300 rounded-2xl">
+                <div class="w-12 h-12 bg-white border border-slate-200 text-brand-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fa-regular fa-calendar-plus"></i>
+                </div>
+                <h3 class="font-display font-extrabold tracking-tight text-2xl text-slate-900 mb-1">Nothing planned yet</h3>
+                <p class="text-xs text-slate-600 max-w-xs mx-auto mb-4">Add a spot, or move one here from another day.</p>
+                <button id="emptyAddBtn" class="sticker bg-brand-500 text-onbrand text-xs font-bold px-4 py-2.5 rounded-lg">
+                    Add a spot
+                </button>
+            </div>
+
+        </main>
+
+        <footer class="text-center py-4 px-4 text-xs text-slate-600 border-t border-slate-200 mt-auto">
+            <span>Tap a spot to tick it off · Drag <i class="fa-solid fa-grip-vertical"></i> to reorder</span>
+        </footer>
+    </div>
+
+    <!-- Move Item to Another Day Modal -->
+    <div id="moveModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-custom hidden items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 border-2 border-slate-900">
+            <div class="flex justify-between items-center mb-1">
+                <h3 class="font-display font-extrabold tracking-tight text-[26px] leading-tight text-slate-900">Move to another day</h3>
+                <button id="closeMoveModalBtn" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <p id="moveItemTitle" class="text-xs text-slate-600 mb-4"></p>
+            <div class="space-y-2" id="moveDayButtonsContainer">
+                <!-- Day buttons populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Activity Modal -->
+    <div id="itemModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-custom hidden items-end sm:items-center justify-center z-50 p-0 sm:p-4 transition-opacity">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl transform transition-transform border border-slate-100">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modalTitle" class="font-display font-extrabold tracking-tight text-[26px] leading-tight text-slate-900">Add a spot</h3>
+                <button id="closeModalBtn" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="itemForm" class="space-y-4">
+                <div>
+                    <label for="itemTitleInput" class="block text-[13px] font-medium text-slate-900 mb-1.5">Place or activity</label>
+                    <input type="text" id="itemTitleInput" required placeholder="e.g. Canal walk" class="w-full px-3.5 py-2.5 bg-white border-2 border-slate-200 rounded-xl text-[15px] focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="itemCategorySelect" class="block text-[13px] font-medium text-slate-900 mb-1.5">Category</label>
+                        <select id="itemCategorySelect" class="w-full px-3 py-2.5 bg-white border-2 border-slate-200 rounded-xl text-[15px] focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900">
+                            <option value="Sightseeing">Sightseeing</option>
+                            <option value="Food & Drink">Food & drink</option>
+                            <option value="Culture & Museum">Culture & museum</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Travel & Hotel">Travel & hotel</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="itemTimeInput" class="block text-[13px] font-medium text-slate-900 mb-1.5">Time</label>
+                        <input type="text" id="itemTimeInput" inputmode="numeric" placeholder="14:00" class="w-full px-3.5 py-2.5 bg-white border-2 border-slate-200 rounded-xl text-[15px] font-mono focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="itemMapQueryInput" class="block text-[13px] font-medium text-slate-900 mb-1.5">Google Maps search</label>
+                    <input type="text" id="itemMapQueryInput" placeholder="Place name or address" class="w-full px-3.5 py-2.5 bg-white border-2 border-slate-200 rounded-xl text-[15px] focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900">
+                    <p class="text-[11px] text-slate-600 mt-1">Leave blank to search for the name above.</p>
+                </div>
+
+                <div>
+                    <label for="itemNotesInput" class="block text-[13px] font-medium text-slate-900 mb-1.5">Notes</label>
+                    <input type="text" id="itemNotesInput" placeholder="Tickets, opening hours, reservations" class="w-full px-3.5 py-2.5 bg-white border-2 border-slate-200 rounded-xl text-[15px] focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900">
+                </div>
+
+                <input type="hidden" id="editingItemId" value="">
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" id="cancelModalBtn" class="flex-1 py-3 text-slate-900 font-medium text-sm bg-white border-2 border-slate-200 rounded-xl active-scale">Cancel</button>
+                    <button type="submit" class="flex-1 py-3 text-onbrand font-bold text-sm bg-brand-500 rounded-xl sticker">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PWA Install Guide Modal -->
+    <div id="pwaModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-custom hidden items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 border-2 border-slate-900">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="font-display font-extrabold tracking-tight text-[26px] leading-tight text-slate-900">Add to your home screen</h3>
+                <button id="closePwaBtn" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-600 mb-4 leading-relaxed">Open this itinerary full screen from your iPhone, like an app. Your ticks are saved on the phone.</p>
+
+            <ol class="space-y-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-[13px] text-slate-700">
+                <li class="flex items-start gap-3">
+                    <span class="font-mono text-[11px] text-brand-500 pt-0.5">01</span>
+                    <span>Tap <strong>Share</strong> (<i class="fa-solid fa-arrow-up-from-bracket text-slate-600"></i>) in Safari's bottom bar.</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="font-mono text-[11px] text-brand-500 pt-0.5">02</span>
+                    <span>Scroll down and tap <strong>Add to Home Screen</strong>.</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="font-mono text-[11px] text-brand-500 pt-0.5">03</span>
+                    <span>Open it from your home screen whenever you need it, even offline.</span>
+                </li>
+            </ol>
+
+            <button id="gotItPwaBtn" class="w-full mt-5 py-3 text-onbrand font-bold text-sm bg-brand-500 rounded-xl sticker">Got it</button>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'trip_amsterdam_v2_1793140509580';
+        const defaultData = {
+  "activeDayId": "day1",
+  "days": [
+    {
+      "id": "day1",
+      "dayNumber": 1,
+      "date": "Nov 4",
+      "weekday": "Wed",
+      "title": "Day 1: Nov 4",
+      "subtitle": "Arrival & Centrum & Damrak",
+      "area": "Centrum & Damrak",
+      "items": [
+        {
+          "id": "travel-1793135487026-s126v",
+          "title": "Arrive in Amsterdam",
+          "category": "Travel & Hotel",
+          "notes": "",
+          "mapQuery": "Amsterdam",
+          "time": "10:00",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-s95wlj",
+          "title": "C&A",
+          "category": "Shopping",
+          "notes": "Buikslotermeerplein 298, 1025 GB Amsterdam, Netherlands",
+          "mapQuery": "C&A, Amsterdam",
+          "time": "10:15",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-rrqb8p",
+          "title": "Albert Heijn",
+          "category": "Food & Drink",
+          "notes": "",
+          "mapQuery": "Albert Heijn, Amsterdam",
+          "time": "14:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-t6v4xx",
+          "title": "Fabel Friet Runstraat",
+          "category": "Food & Drink",
+          "notes": "Runstraat 1, 1016 GJ Amsterdam, Netherlands",
+          "mapQuery": "Fabel Friet Runstraat, Amsterdam",
+          "time": "15:00",
+          "isMeal": true,
+          "mealType": "lunch",
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-vb7rrl",
+          "title": "The Dolphins",
+          "category": "Sightseeing",
+          "notes": "Kerkstraat 39, 1017 GB Amsterdam, Netherlands",
+          "mapQuery": "The Dolphins, Amsterdam",
+          "time": "16:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-hifmxj",
+          "title": "Louis Vuitton Pieter Cornelisz Hooftstraat",
+          "category": "Shopping",
+          "notes": "Pieter Cornelisz Hooftstraat 67, 1071 BP Amsterdam, Netherlands",
+          "mapQuery": "Louis Vuitton Pieter Cornelisz Hooftstraat, Amsterdam",
+          "time": "17:00",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-zznsvg",
+          "title": "nNea Pizza",
+          "category": "Food & Drink",
+          "notes": "Bilderdijkstraat 92, 1053 KX Amsterdam, Netherlands",
+          "mapQuery": "nNea Pizza, Amsterdam",
+          "time": "19:30",
+          "isMeal": true,
+          "mealType": "dinner",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": "day2",
+      "dayNumber": 2,
+      "date": "Nov 5",
+      "weekday": "Thu",
+      "title": "Day 2: Nov 5",
+      "subtitle": "Museum Quarter & Leidseplein",
+      "area": "Museum Quarter & Leidseplein",
+      "items": [
+        {
+          "id": "item-1793135487024-6behk7",
+          "title": "Art Zoo Museum",
+          "category": "Culture & Museum",
+          "notes": "Herengracht 368, 1016 CH Amsterdam, Netherlands",
+          "mapQuery": "Art Zoo Museum, Amsterdam",
+          "time": "09:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487023-aaw9dp",
+          "title": "RUMA",
+          "category": "Food & Drink",
+          "notes": "formerly De beste Lekkernij) (Herenstraat 24A, 1015 CB Amsterdam, Netherlands",
+          "mapQuery": "RUMA, Amsterdam",
+          "time": "11:45",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-h4a2sq",
+          "title": "Launch at La Zoccola del Pacioccone",
+          "category": "Food & Drink",
+          "notes": "Nieuwe Nieuwstraat 22HS, 1012 NH Amsterdam, Netherlands",
+          "mapQuery": "La Zoccola del Pacioccone, Amsterdam",
+          "time": "14:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-jwpfze",
+          "title": "Seji's World",
+          "category": "Sightseeing",
+          "notes": "",
+          "mapQuery": "Seji's World, Amsterdam",
+          "time": "15:00",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-xupajw",
+          "title": "The Gamekeeper",
+          "category": "Sightseeing",
+          "notes": "",
+          "mapQuery": "The Gamekeeper, Amsterdam",
+          "time": "15:00",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-mfxync",
+          "title": "A Space Oddity",
+          "category": "Sightseeing",
+          "notes": "",
+          "mapQuery": "A Space Oddity, Amsterdam",
+          "time": "16:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-hrdwsk",
+          "title": "MONTY'S Toasties ☀️",
+          "category": "Food & Drink",
+          "notes": "Eerste Anjeliersdwarsstraat 16, 1015 NR Amsterdam, Netherlands",
+          "mapQuery": "MONTY'S Toasties ☀️, Amsterdam",
+          "time": "16:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-q5tnn5",
+          "title": "Henk Comics",
+          "category": "Sightseeing",
+          "notes": "",
+          "mapQuery": "Henk Comics, Amsterdam",
+          "time": "17:00",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-whhqli",
+          "title": "Skechers",
+          "category": "Shopping",
+          "notes": "",
+          "mapQuery": "Skechers, Amsterdam",
+          "time": "17:00",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-dq2i38",
+          "title": "Cannabis Bakehouse Store Amsterdam",
+          "category": "Shopping",
+          "notes": "",
+          "mapQuery": "Cannabis Bakehouse Store Amsterdam",
+          "time": "18:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-i9s9rv",
+          "title": "Pizza Beppe Rozenboomsteeg - Amsterdam Spui",
+          "category": "Food & Drink",
+          "notes": "Rozenboomsteeg 12-14, 1012 PR Amsterdam, Netherlands",
+          "mapQuery": "Pizza Beppe Rozenboomsteeg - Amsterdam Spui",
+          "time": "19:30",
+          "isMeal": true,
+          "mealType": "dinner",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": "day3",
+      "dayNumber": 3,
+      "date": "Nov 6",
+      "weekday": "Fri",
+      "title": "Day 3: Nov 6",
+      "subtitle": "Jordaan & 9 Streets",
+      "area": "Jordaan & 9 Streets",
+      "items": [
+        {
+          "id": "item-1793135487024-vrbqvh",
+          "title": "Albert Cuyp Markt",
+          "category": "Sightseeing",
+          "notes": "Albert Cuypstraat 101, 1072 VV Amsterdam, Netherlands",
+          "mapQuery": "Albert Cuyp Markt, Amsterdam",
+          "time": "11:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-qv6gx7",
+          "title": "Sportshop Peterjan B.V.",
+          "category": "Shopping",
+          "notes": "",
+          "mapQuery": "Sportshop Peterjan B.V., Amsterdam",
+          "time": "13:00",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-drofzt",
+          "title": "Ulla Popken",
+          "category": "Shopping",
+          "notes": "Ceintuurbaan 288h, 1072 GK Amsterdam, Netherlands",
+          "mapQuery": "Ulla Popken, Amsterdam",
+          "time": "13:00",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-kj96bq",
+          "title": "Warmoesstraat 36H",
+          "category": "Sightseeing",
+          "notes": "Warmoesstraat 36H, 1012 JE Amsterdam, Netherlands",
+          "mapQuery": "Warmoesstraat 36H, Amsterdam",
+          "time": "14:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-hp7t6i",
+          "title": "MOAK Pancakes City Center",
+          "category": "Food & Drink",
+          "notes": "Jodenbreestraat 144, 1011 NS Amsterdam, Netherlands",
+          "mapQuery": "MOAK Pancakes City Center, Amsterdam",
+          "time": "15:00",
+          "isMeal": true,
+          "mealType": "lunch",
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-cjtuqa",
+          "title": "FEBO Amsterdam - Leidsestraat",
+          "category": "Food & Drink",
+          "notes": "",
+          "mapQuery": "FEBO Amsterdam - Leidsestraat",
+          "time": "17:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-1sbjcy",
+          "title": "Moca Choco",
+          "category": "Food & Drink",
+          "notes": "Eerste van der Helststraat 27, 1073 XG Amsterdam, Netherlands",
+          "mapQuery": "Moca Choco, Amsterdam",
+          "time": "18:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "meal-d-3-1793135487028",
+          "title": "Dinner in Jordaan & 9 Streets",
+          "category": "Food & Drink",
+          "notes": "Search for a spot near where the day takes you",
+          "mapQuery": "dinner Jordaan & 9 Streets Amsterdam",
+          "time": "19:30",
+          "isMeal": true,
+          "mealType": "dinner",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": "day4",
+      "dayNumber": 4,
+      "date": "Nov 7",
+      "weekday": "Sat",
+      "title": "Day 4: Nov 7",
+      "subtitle": "Amsterdam-Noord",
+      "area": "Amsterdam-Noord",
+      "items": [
+        {
+          "id": "item-1793135487024-dl0z5t",
+          "title": "Hope Special Sizes",
+          "category": "Sightseeing",
+          "notes": "",
+          "mapQuery": "Hope Special Sizes, Amsterdam",
+          "time": "10:00",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-o19r6q",
+          "title": "Lindt",
+          "category": "Shopping",
+          "notes": "Sugar City Plaza 82-84, 1165 PA Halfweg, Netherlands",
+          "mapQuery": "Lindt, Amsterdam",
+          "time": "11:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-6hyh3h",
+          "title": "Elbenwald",
+          "category": "Sightseeing",
+          "notes": "",
+          "mapQuery": "Elbenwald, Amsterdam",
+          "time": "11:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-41hwl8",
+          "title": "Manneken Pis Nieuwendijk",
+          "category": "Food & Drink",
+          "notes": "Nieuwendijk 222, 1012 MX Amsterdam, Netherlands",
+          "mapQuery": "Manneken Pis Nieuwendijk, Amsterdam",
+          "time": "11:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-cn41wu",
+          "title": "Hard Rock Cafe Amsterdam",
+          "category": "Food & Drink",
+          "notes": "",
+          "mapQuery": "Hard Rock Cafe Amsterdam",
+          "time": "13:00",
+          "isMeal": true,
+          "mealType": "lunch",
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-sg2wcz",
+          "title": "Subway",
+          "category": "Food & Drink",
+          "notes": "Reguliersbreestraat 27, 1017 CL Amsterdam, Netherlands",
+          "mapQuery": "Subway, Amsterdam",
+          "time": "14:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-7zua82",
+          "title": "Subway",
+          "category": "Food & Drink",
+          "notes": "Ceintuurbaan 93, 1072 EX Amsterdam, Netherlands",
+          "mapQuery": "Subway, Amsterdam",
+          "time": "15:00",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-3g7puw",
+          "title": "Castell",
+          "category": "Sightseeing",
+          "notes": "Lijnbaansgracht 254, 252, 1017 RK Amsterdam, Netherlands",
+          "mapQuery": "Castell, Amsterdam",
+          "time": "16:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-yzrju5",
+          "title": "Douglas",
+          "category": "Shopping",
+          "notes": "Kalverstraat 71, 1012 NZ Amsterdam, Netherlands",
+          "mapQuery": "Douglas, Amsterdam",
+          "time": "18:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "meal-d-4-1793135487028",
+          "title": "Dinner in Amsterdam-Noord",
+          "category": "Food & Drink",
+          "notes": "Search for a spot near where the day takes you",
+          "mapQuery": "dinner Amsterdam-Noord Amsterdam",
+          "time": "19:30",
+          "isMeal": true,
+          "mealType": "dinner",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": "day5",
+      "dayNumber": 5,
+      "date": "Nov 8",
+      "weekday": "Sun",
+      "title": "Day 5: Nov 8",
+      "subtitle": "Departure",
+      "area": "De Pijp & Albert Cuyp",
+      "items": [
+        {
+          "id": "item-1793135487024-bp8zsz",
+          "title": "Rijksmuseum",
+          "category": "Culture & Museum",
+          "notes": "Museumstraat 1, 1071 XX Amsterdam, Netherlands",
+          "mapQuery": "Rijksmuseum, Amsterdam",
+          "time": "09:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-ht0dr5",
+          "title": "Eggs Benaddicted Prinsengracht",
+          "category": "Sightseeing",
+          "notes": "Prinsengracht 474, 1017 KG Amsterdam, Netherlands",
+          "mapQuery": "Eggs Benaddicted Prinsengracht, Amsterdam",
+          "time": "10:00",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-xwv0fy",
+          "title": "The LEGO® Store Amsterdam",
+          "category": "Shopping",
+          "notes": "Kalverstraat 57, 1012 NZ Amsterdam, Netherlands",
+          "mapQuery": "The LEGO® Store Amsterdam",
+          "time": "13:00",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "meal-l-5-1793135487028",
+          "title": "New York Deli Amsterdam",
+          "category": "Food & Drink",
+          "notes": "Pastrami on rye & quick gourmet sandwiches",
+          "mapQuery": "New York Deli Amsterdam",
+          "time": "14:30",
+          "isMeal": true,
+          "mealType": "lunch",
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-b9uj5e",
+          "title": "Van Stapele Koekmakerij",
+          "category": "Food & Drink",
+          "notes": "",
+          "mapQuery": "Van Stapele Koekmakerij, Amsterdam",
+          "time": "16:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "item-1793135487024-wsji0b",
+          "title": "Manneken Pis Damrak",
+          "category": "Food & Drink",
+          "notes": "Damrak 41, 1012 LK Amsterdam, Netherlands",
+          "mapQuery": "Manneken Pis Damrak, Amsterdam",
+          "time": "18:00",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        },
+        {
+          "id": "travel-1793135487026-v6p3e",
+          "title": "Leave for your 21:30 departure",
+          "category": "Travel & Hotel",
+          "notes": "",
+          "mapQuery": "Amsterdam",
+          "time": "18:30",
+          "isMeal": false,
+          "mealType": null,
+          "completed": false
+        }
+      ]
+    }
+  ]
+};
+        // Each day's line color, cycling like the builder's day tabs
+        const DAY_COLORS = ["#FF5A36","#4D6BFF","#FFD23F","#2EC4A0","#FF7EB6"];
+
+        function dayColor(index) {
+            return DAY_COLORS[index % DAY_COLORS.length];
+        }
+
+        let appData = loadData();
+        let targetMovingItemId = null;
+
+        // DOM elements
+        const daysNav = document.getElementById('daysNav');
+        const checklistItems = document.getElementById('checklistItems');
+        const emptyState = document.getElementById('emptyState');
+        const dayEyebrow = document.getElementById('dayEyebrow');
+        const dayTitle = document.getElementById('dayTitle');
+        const daySubtitle = document.getElementById('daySubtitle');
+        const overallProgressBar = document.getElementById('overallProgressBar');
+        const dayCountText = document.getElementById('dayCountText');
+        const dayProgressBar = document.getElementById('dayProgressBar');
+        const overallProgressText = document.getElementById('overallProgressText');
+        const overallPercentBadge = document.getElementById('overallPercentBadge');
+
+        const itemModal = document.getElementById('itemModal');
+        const itemForm = document.getElementById('itemForm');
+        const modalTitle = document.getElementById('modalTitle');
+        const itemTitleInput = document.getElementById('itemTitleInput');
+        const itemCategorySelect = document.getElementById('itemCategorySelect');
+        const itemTimeInput = document.getElementById('itemTimeInput');
+        const itemMapQueryInput = document.getElementById('itemMapQueryInput');
+        const itemNotesInput = document.getElementById('itemNotesInput');
+        const editingItemId = document.getElementById('editingItemId');
+        
+        const moveModal = document.getElementById('moveModal');
+        const moveItemTitle = document.getElementById('moveItemTitle');
+        const moveDayButtonsContainer = document.getElementById('moveDayButtonsContainer');
+        const pwaModal = document.getElementById('pwaModal');
+
+        function loadData() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    return JSON.parse(stored);
+                }
+            } catch (e) {
+                console.error('Failed to load local storage', e);
+            }
+            return defaultData;
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            } catch (e) {
+                console.error('Failed to save to local storage', e);
+            }
+        }
+
+        function renderApp() {
+            renderDaysNav();
+            renderCurrentDay();
+            renderOverallProgress();
+            saveData();
+        }
+
+        function timeToMinutes(timeStr) {
+            if (!timeStr) return 1200;
+            const match = String(timeStr).trim().match(/^(\d{1,2}):(\d{2})/);
+            if (match) {
+                return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+            }
+            return 1200;
+        }
+
+        function getCurrentDay() {
+            return appData.days.find(d => d.id === appData.activeDayId) || appData.days[0];
+        }
+
+        function getGoogleMapsUrl(query) {
+            const cleanQuery = query && query.trim().length > 0 ? query.trim() : 'Amsterdam';
+            return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(cleanQuery);
+        }
+
+        function renderDaysNav() {
+            daysNav.innerHTML = '';
+            appData.days.forEach((day, idx) => {
+                const isActive = day.id === appData.activeDayId;
+                const completedCount = day.items.filter(i => i.completed).length;
+                const totalCount = day.items.length;
+                const isAllDone = totalCount > 0 && completedCount === totalCount;
+
+                const tabBtn = document.createElement('button');
+                tabBtn.className = 'day-tab active-scale' + (isActive ? ' is-active' : '') + (isAllDone ? ' is-done' : '');
+
+                tabBtn.onclick = () => {
+                    appData.activeDayId = day.id;
+                    renderApp();
+                };
+
+                const tabDate = day.date ? ((day.weekday ? day.weekday + ' ' : '') + day.date) : 'Day ' + (idx + 1);
+                tabBtn.innerHTML =
+                    '<span class="day-tab-date">' + escapeHtml(tabDate) + '</span>' +
+                    '<span class="day-tab-title">Day ' + (idx + 1) + '</span>' +
+                    '<span class="day-tab-count">' + (isAllDone ? '<i class="fa-solid fa-check"></i> ' : '') + completedCount + '/' + totalCount + '</span>';
+
+                tabBtn.style.setProperty('--day', dayColor(idx));
+                daysNav.appendChild(tabBtn);
+            });
+        }
+
+        // Gaps between start times longer than this get a free-time marker
+        const LONG_GAP_MINUTES = 180;
+
+        function hasClockTime(t) {
+            return /^\d{1,2}:\d{2}/.test(t || '');
+        }
+
+        function formatGap(mins) {
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            return m ? h + 'h ' + m + 'm' : h + 'h';
+        }
+
+        function renderCurrentDay() {
+            const day = getCurrentDay();
+            const dayIndex = appData.days.indexOf(day);
+            document.documentElement.style.setProperty('--day', dayColor(dayIndex));
+            const heading = day.subtitle || day.area || day.title || 'Day ' + (dayIndex + 1);
+            dayEyebrow.textContent = 'Day ' + (dayIndex + 1) + (day.date ? ' · ' + (day.weekday ? day.weekday + ', ' : '') + day.date : '');
+            dayTitle.textContent = heading;
+            const showArea = day.area && heading.toLowerCase().indexOf(day.area.toLowerCase()) === -1;
+            daySubtitle.textContent = showArea ? day.area : '';
+            daySubtitle.classList.toggle('hidden', !showArea);
+
+            // Always sort chronologically so morning is at the top
+            day.items.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
+            const completedCount = day.items.filter(i => i.completed).length;
+            const totalCount = day.items.length;
+            const percent = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
+
+            dayCountText.textContent = completedCount + '/' + totalCount + ' done';
+            dayProgressBar.style.width = percent + '%';
+
+            const timeCounts = {};
+            day.items.forEach(i => {
+                if (hasClockTime(i.time)) timeCounts[i.time] = (timeCounts[i.time] || 0) + 1;
+            });
+
+            checklistItems.innerHTML = '';
+
+            if (day.items.length === 0) {
+                emptyState.classList.remove('hidden');
+                checklistItems.classList.add('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+                checklistItems.classList.remove('hidden');
+            }
+
+            day.items.forEach((item, index) => {
+                const isLast = index === day.items.length - 1;
+                const mapUrl = getGoogleMapsUrl(item.mapQuery || item.title);
+                const isClash = timeCounts[item.time] > 1;
+                const next = day.items[index + 1];
+                const gapMins = next && hasClockTime(item.time) && hasClockTime(next.time)
+                    ? timeToMinutes(next.time) - timeToMinutes(item.time)
+                    : 0;
+                const gapLabel = gapMins > LONG_GAP_MINUTES ? formatGap(gapMins) : '';
+
+                // Outer timeline row wrapper
+                const row = document.createElement('div');
+                row.className = 'timeline-item-row';
+
+                // --- Left column: time + dot, connector, free-time label ---
+                const timeCol = document.createElement('div');
+                timeCol.className = 'timeline-time-col';
+                timeCol.innerHTML =
+                    '<div class="timeline-time-pill' + (isClash ? ' is-clash' : '') + '"' +
+                        (isClash ? ' title="More than one spot at ' + escapeHtml(item.time) + '"' : '') + '>' +
+                        escapeHtml(item.time || '--:--') +
+                    '</div>' +
+                    (!isLast ? '<div class="timeline-connector' + (gapLabel ? ' is-long' : '') + '"></div>' : '') +
+                    (gapLabel ? '<span class="timeline-gap">' + gapLabel + '</span>' : '');
+
+                // --- Right column: card ---
+                const cardWrap = document.createElement('div');
+                cardWrap.className = 'timeline-card';
+
+                const card = document.createElement('div');
+                card.className = 'spot-card' + (item.completed ? ' is-done' : '');
+
+                card.innerHTML =
+                    '<div class="spot-main">' +
+                        '<!-- Drag Handle -->' +
+                        '<div class="drag-handle" title="Drag to reorder">' +
+                            '<i class="fa-solid fa-grip-vertical text-xs"></i>' +
+                        '</div>' +
+
+                        '<!-- Checkbox -->' +
+                        '<button onclick="toggleItem(\'' + item.id + '\')" class="spot-check checkbox-pop active-scale" aria-label="' + (item.completed ? 'Mark as not done' : 'Mark as done') + '">' +
+                            '<i class="fa-solid fa-check text-xs"></i>' +
+                        '</button>' +
+
+                        '<!-- Details -->' +
+                        '<div class="spot-info" onclick="toggleItem(\'' + item.id + '\')">' +
+                            '<div class="spot-tags">' +
+                                '<span class="cat-tag ' + getCategoryBadgeClass(item.category) + '">' + escapeHtml(item.category || 'Sightseeing') + '</span>' +
+                                (item.mealType ? '<span class="meal-tag"><i class="fa-solid fa-utensils text-[8px]"></i>' + item.mealType + '</span>' : '') +
+                            '</div>' +
+                            '<h4 class="spot-title ' + (item.completed ? 'item-text-done' : '') + '">' + escapeHtml(item.title) + '</h4>' +
+                            (item.notes ? '<p class="spot-notes ' + (item.completed ? 'opacity-60' : '') + '">' + escapeHtml(item.notes) + '</p>' : '') +
+                        '</div>' +
+                    '</div>' +
+
+                    '<!-- Action Buttons -->' +
+                    '<div class="spot-actions">' +
+                        '<a href="' + mapUrl + '" target="_blank" rel="noopener noreferrer" class="spot-action is-map active-scale">' +
+                            '<i class="fa-solid fa-location-dot"></i><span>Map</span>' +
+                        '</a>' +
+                        '<button onclick="openMoveModal(\'' + item.id + '\')" class="spot-action active-scale">' +
+                            '<i class="fa-solid fa-right-left text-xs"></i><span>Move</span>' +
+                        '</button>' +
+                        '<button onclick="openEditModal(\'' + item.id + '\')" class="spot-action is-push active-scale" aria-label="Edit spot">' +
+                            '<i class="fa-regular fa-pen-to-square text-[13px]"></i>' +
+                        '</button>' +
+                        '<button onclick="deleteItem(\'' + item.id + '\')" class="spot-action is-danger active-scale" aria-label="Delete spot">' +
+                            '<i class="fa-regular fa-trash-can text-[13px]"></i>' +
+                        '</button>' +
+                    '</div>';
+
+                card.querySelector('.drag-handle').addEventListener('pointerdown', e => startDrag(e, index));
+
+                cardWrap.appendChild(card);
+                row.appendChild(timeCol);
+                row.appendChild(cardWrap);
+                checklistItems.appendChild(row);
+            });
+        }
+
+        function renderOverallProgress() {
+            let total = 0;
+            let done = 0;
+
+            appData.days.forEach(day => {
+                total += day.items.length;
+                done += day.items.filter(i => i.completed).length;
+            });
+
+            const percent = total === 0 ? 0 : Math.round((done / total) * 100);
+            overallProgressText.textContent = done + ' of ' + total + ' done';
+            overallPercentBadge.textContent = percent + '%';
+            overallProgressBar.style.width = percent + '%';
+        }
+
+        function toggleItem(itemId) {
+            const day = getCurrentDay();
+            const item = day.items.find(i => i.id === itemId);
+            if (item) {
+                item.completed = !item.completed;
+                renderApp();
+            }
+        }
+
+        function reorderItem(itemId, direction) {
+            const day = getCurrentDay();
+            const index = day.items.findIndex(i => i.id === itemId);
+            if (index < 0) return;
+            moveItemWithinDay(index, index + direction);
+        }
+
+        // The day's time slots stay where they are; items are re-seated into them
+        // in their new order, so the list stays chronological after re-sorting.
+        function moveItemWithinDay(fromIndex, toIndex) {
+            const day = getCurrentDay();
+            if (fromIndex === toIndex || toIndex < 0 || toIndex >= day.items.length) return;
+            const slotTimes = day.items.map(i => i.time || '');
+            const [moved] = day.items.splice(fromIndex, 1);
+            day.items.splice(toIndex, 0, moved);
+            day.items.forEach((item, idx) => { item.time = slotTimes[idx]; });
+            renderApp();
+        }
+
+        // ===== Drag & drop (pointer events, so it works with touch on iPhone) =====
+        let dragState = null;
+
+        function startDrag(e, fromIndex) {
+            if (e.button !== 0) return;
+            const rows = Array.from(checklistItems.children);
+            if (rows.length < 2) return;
+            e.preventDefault();
+
+            const scrollY = window.scrollY;
+            const rects = rows.map(r => {
+                const b = r.getBoundingClientRect();
+                return { top: b.top + scrollY, height: b.height };
+            });
+            // Distance a neighbour travels to fill the dragged row's spot
+            const gap = rects[1].top - rects[0].top - rects[0].height;
+            const handle = e.currentTarget;
+
+            dragState = {
+                handle: handle,
+                pointerId: e.pointerId,
+                rows: rows,
+                rects: rects,
+                pills: rows.map(r => r.querySelector('.timeline-time-pill')),
+                slotTimes: getCurrentDay().items.map(i => i.time || ''),
+                fromIndex: fromIndex,
+                toIndex: fromIndex,
+                step: rects[fromIndex].height + gap,
+                startPageY: e.clientY + scrollY,
+                clientY: e.clientY,
+                raf: null
+            };
+
+            handle.setPointerCapture(e.pointerId);
+            handle.addEventListener('pointermove', onDragMove);
+            handle.addEventListener('pointerup', onDragEnd);
+            handle.addEventListener('pointercancel', onDragCancel);
+
+            rows.forEach((r, i) => r.classList.add(i === fromIndex ? 'drag-active' : 'drag-shift'));
+            document.body.classList.add('is-dragging');
+            dragState.raf = requestAnimationFrame(autoScrollTick);
+        }
+
+        function onDragMove(e) {
+            if (!dragState) return;
+            dragState.clientY = e.clientY;
+            updateDragPositions();
+        }
+
+        function updateDragPositions() {
+            const s = dragState;
+            const dy = s.clientY + window.scrollY - s.startPageY;
+            const from = s.rects[s.fromIndex];
+            const draggedCenter = from.top + from.height / 2 + dy;
+
+            let to = s.fromIndex;
+            s.rects.forEach((r, i) => {
+                const center = r.top + r.height / 2;
+                if (i < s.fromIndex && draggedCenter < center) to = Math.min(to, i);
+                if (i > s.fromIndex && draggedCenter > center) to = Math.max(to, i);
+            });
+            s.toIndex = to;
+
+            // New order of original indices, used to preview the re-assigned times
+            const order = s.rows.map((_, i) => i);
+            order.splice(s.fromIndex, 1);
+            order.splice(to, 0, s.fromIndex);
+
+            s.rows.forEach((row, i) => {
+                let offset = 0;
+                if (i === s.fromIndex) offset = dy;
+                else if (s.fromIndex < to && i > s.fromIndex && i <= to) offset = -s.step;
+                else if (to < s.fromIndex && i >= to && i < s.fromIndex) offset = s.step;
+                row.style.transform = offset ? 'translateY(' + offset + 'px)' : '';
+            });
+            order.forEach((origIdx, pos) => {
+                s.pills[origIdx].textContent = s.slotTimes[pos] || '--:--';
+            });
+        }
+
+        // Scroll the page while the finger/mouse is held near the top or bottom edge
+        function autoScrollTick() {
+            if (!dragState) return;
+            const edge = 80;
+            const y = dragState.clientY;
+            let speed = 0;
+            if (y < edge) speed = -Math.ceil((edge - y) / 5);
+            else if (y > window.innerHeight - edge) speed = Math.ceil((y - (window.innerHeight - edge)) / 5);
+            if (speed) {
+                window.scrollBy(0, speed);
+                updateDragPositions();
+            }
+            dragState.raf = requestAnimationFrame(autoScrollTick);
+        }
+
+        function finishDrag(commit) {
+            const s = dragState;
+            if (!s) return;
+            dragState = null;
+            cancelAnimationFrame(s.raf);
+            s.handle.removeEventListener('pointermove', onDragMove);
+            s.handle.removeEventListener('pointerup', onDragEnd);
+            s.handle.removeEventListener('pointercancel', onDragCancel);
+            if (s.handle.hasPointerCapture(s.pointerId)) s.handle.releasePointerCapture(s.pointerId);
+            document.body.classList.remove('is-dragging');
+
+            if (commit && s.toIndex !== s.fromIndex) {
+                moveItemWithinDay(s.fromIndex, s.toIndex);
+            } else {
+                renderApp();
+            }
+        }
+
+        function onDragEnd() { finishDrag(true); }
+        function onDragCancel() { finishDrag(false); }
+
+        function deleteItem(itemId) {
+            const day = getCurrentDay();
+            day.items = day.items.filter(i => i.id !== itemId);
+            renderApp();
+        }
+
+        function resetCurrentDay() {
+            const day = getCurrentDay();
+            day.items.forEach(i => i.completed = false);
+            renderApp();
+        }
+
+        // Cross-day Move Modal functions
+        function openMoveModal(itemId) {
+            targetMovingItemId = itemId;
+            const currentDay = getCurrentDay();
+            const item = currentDay.items.find(i => i.id === itemId);
+            if (!item) return;
+
+            moveItemTitle.textContent = item.title;
+            moveDayButtonsContainer.innerHTML = '';
+
+            appData.days.forEach((day, idx) => {
+                const isCurrent = day.id === currentDay.id;
+                const btn = document.createElement('button');
+                btn.className = 'w-full py-3 px-4 text-left rounded-xl border flex items-center justify-between gap-3 active-scale ' + (
+                    isCurrent
+                        ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                        : 'bg-white text-slate-900 border-slate-200'
+                );
+                btn.disabled = isCurrent;
+                const when = day.date ? (day.weekday ? day.weekday + ', ' : '') + day.date : '';
+                btn.innerHTML = '<span class="min-w-0">' +
+                                    '<span class="block text-sm font-semibold">Day ' + (idx + 1) + (when ? ' <span class="font-mono text-[11px] font-normal text-slate-600">' + escapeHtml(when) + '</span>' : '') + '</span>' +
+                                    (day.subtitle ? '<span class="block text-xs text-slate-600 truncate mt-0.5">' + escapeHtml(day.subtitle) + '</span>' : '') +
+                                '</span>' +
+                               (isCurrent ? '<span class="text-[11px] text-slate-500">Current</span>' : '<i class="fa-solid fa-arrow-right text-[11px] text-brand-500"></i>');
+                
+                btn.onclick = () => {
+                    executeMoveItemToDay(day.id);
+                };
+                moveDayButtonsContainer.appendChild(btn);
+            });
+
+            moveModal.classList.remove('hidden');
+            moveModal.classList.add('flex');
+        }
+
+        function closeMoveModal() {
+            moveModal.classList.add('hidden');
+            moveModal.classList.remove('flex');
+            targetMovingItemId = null;
+        }
+
+        function executeMoveItemToDay(targetDayId) {
+            if (!targetMovingItemId) return;
+            const sourceDay = getCurrentDay();
+            const targetDay = appData.days.find(d => d.id === targetDayId);
+            if (!targetDay) return;
+
+            const itemIndex = sourceDay.items.findIndex(i => i.id === targetMovingItemId);
+            if (itemIndex > -1) {
+                const [item] = sourceDay.items.splice(itemIndex, 1);
+                targetDay.items.push(item);
+                targetDay.items.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+                closeMoveModal();
+                renderApp();
+            }
+        }
+
+        function openAddModal() {
+            editingItemId.value = '';
+            itemTitleInput.value = '';
+            itemNotesInput.value = '';
+            itemTimeInput.value = '';
+            itemMapQueryInput.value = '';
+            itemCategorySelect.value = 'Sightseeing';
+            modalTitle.textContent = 'Add a spot';
+            itemModal.classList.remove('hidden');
+            itemModal.classList.add('flex');
+            setTimeout(() => itemTitleInput.focus(), 100);
+        }
+
+        function openEditModal(itemId) {
+            const day = getCurrentDay();
+            const item = day.items.find(i => i.id === itemId);
+            if (!item) return;
+
+            editingItemId.value = item.id;
+            itemTitleInput.value = item.title;
+            itemNotesInput.value = item.notes || '';
+            itemTimeInput.value = item.time || '';
+            itemMapQueryInput.value = item.mapQuery || '';
+            itemCategorySelect.value = item.category || 'Sightseeing';
+            modalTitle.textContent = 'Edit spot';
+            itemModal.classList.remove('hidden');
+            itemModal.classList.add('flex');
+        }
+
+        function closeModal() {
+            itemModal.classList.add('hidden');
+            itemModal.classList.remove('flex');
+        }
+
+        itemForm.onsubmit = function(e) {
+            e.preventDefault();
+            const title = itemTitleInput.value.trim();
+            const category = itemCategorySelect.value;
+            const time = itemTimeInput.value.trim();
+            const notes = itemNotesInput.value.trim();
+            const mapQuery = itemMapQueryInput.value.trim();
+            const editId = editingItemId.value;
+
+            if (!title) return;
+
+            const day = getCurrentDay();
+
+            if (editId) {
+                const item = day.items.find(i => i.id === editId);
+                if (item) {
+                    item.title = title;
+                    item.category = category;
+                    item.time = time;
+                    item.notes = notes;
+                    item.mapQuery = mapQuery || title;
+                }
+            } else {
+                const newItem = {
+                    id: Date.now().toString(),
+                    title: title,
+                    category: category,
+                    time: time,
+                    notes: notes,
+                    mapQuery: mapQuery || title,
+                    completed: false
+                };
+                day.items.push(newItem);
+            }
+
+            day.items.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+            closeModal();
+            renderApp();
+        };
+
+        function getCategoryBadgeClass(cat) {
+            switch(cat) {
+                case 'Travel & Hotel': return 'cat-travel';
+                case 'Food & Drink': return 'cat-food';
+                case 'Shopping': return 'cat-shopping';
+                case 'Culture & Museum': return 'cat-culture';
+                default: return 'cat-sightseeing';
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+
+        // Event listeners
+        document.getElementById('addItemBtn').onclick = openAddModal;
+        document.getElementById('emptyAddBtn').onclick = openAddModal;
+        document.getElementById('closeModalBtn').onclick = closeModal;
+        document.getElementById('cancelModalBtn').onclick = closeModal;
+        document.getElementById('resetDayBtn').onclick = resetCurrentDay;
+        document.getElementById('closeMoveModalBtn').onclick = closeMoveModal;
+
+        const sortDayBtn = document.getElementById('sortDayBtn');
+        if (sortDayBtn) {
+            sortDayBtn.onclick = () => {
+                getCurrentDay().items.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+                renderApp();
+            };
+        }
+
+        document.getElementById('pwaHelpBtn').onclick = () => {
+            pwaModal.classList.remove('hidden');
+            pwaModal.classList.add('flex');
+        };
+        document.getElementById('closePwaBtn').onclick = () => {
+            pwaModal.classList.add('hidden');
+            pwaModal.classList.remove('flex');
+        };
+        document.getElementById('gotItPwaBtn').onclick = () => {
+            pwaModal.classList.add('hidden');
+            pwaModal.classList.remove('flex');
+        };
+
+        window.onclick = function(e) {
+            if (e.target === itemModal) closeModal();
+            if (e.target === moveModal) closeMoveModal();
+            if (e.target === pwaModal) {
+                pwaModal.classList.add('hidden');
+                pwaModal.classList.remove('flex');
+            }
+        };
+
+        // Initial render
+        renderApp();
+    </script>
+</body>
+</html>
